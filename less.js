@@ -31,7 +31,8 @@ if (typeof window !== 'undefined') {
           //render it using less
           less_browser.render(responseData, {
             filename: url,
-            rootpath: url.replace(/[^\/]*$/, '')
+            rootpath: url.replace(/[^\/]*$/, ''),
+            relativeUrls: true
           }).then(function (data) {
             //inject it into the head as a style tag
             var style = document.createElement('style');
