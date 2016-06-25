@@ -70,13 +70,24 @@ exports.bundle = function (loads, compileOpts, outputOpts) {
 
 	var less = loader._nodeRequire(lessBundlePath.substr(isWindows ? 8 : 7)); //getLess();
 
-
+	var relativeUrls = true;
 	return less.render(lessOutput, {
 			compress: false,
-			sourceMap: outputOpts.sourceMaps
+			sourceMap: outputOpts.sourceMaps,
+			relativeUrls: relativeUrls
 		})
 		.then(function (data) {
 			var cssOutput = data.css;
+
+			if (relativeUrls) {
+				var urlRegex = /url\(["']?([^"']+)["']?\)/g;
+				var slashRegex = /\\/g;
+				var loadDir = process.cwd().replace(slashRegex, '/') + "/";
+				cssOutput = cssOutput.replace(urlRegex, function (match, url) {
+					return match.replace(loadDir, "").replace(slashRegex, '/');
+				});
+			}
+
 			// write a separate CSS file if necessary
 			if (loader.separateCSS) {
 				if (outputOpts.sourceMaps) {
