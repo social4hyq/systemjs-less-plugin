@@ -26,7 +26,7 @@
   "devDependencies": {
     "babel-eslint": "^5.0.0-beta6",
     "eslint": "^1.10.3",
-    "jspm": "^0.16.27",
+    "jspm": "^0.17.0-beta.22",
     "mocha": "^2.4.5"
   },
 
