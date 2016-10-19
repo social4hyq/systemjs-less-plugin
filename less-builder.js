@@ -51,11 +51,11 @@ exports.bundle = function (loads, compileOpts, outputOpts) {
 	var outFile = loader.separateCSS ? outputOpts.outFile.replace(/\.js$/, '-from-less.css') : rootURL;
 
 	var importRegex = /@import\s+["']([^"']+)["'];/g;
-	var urlRegex = /url\(["']?([^"']+)["']?\)/g;
+	var urlRegex = /url\(["']?(.+?)["']?\)/g;
 	var lessOutput = loads.map(function (load) {
 			var loadAddress = fromFileURL(load.address);
 			var loadDirname = path.dirname(loadAddress);
-			var relativeLoadDirname = loadDirname.replace(rootURL, "");
+			var relativeLoadDirname = loadDirname.replace(rootURL, "").replace(/\\/g, '/');
 			return load.source
 				.replace(importRegex, function (match, importUrl) {
 					return match.replace(importUrl, loadDirname + "/" + importUrl);
@@ -70,23 +70,23 @@ exports.bundle = function (loads, compileOpts, outputOpts) {
 
 	var less = loader._nodeRequire(lessBundlePath.substr(isWindows ? 8 : 7)); //getLess();
 
-	var relativeUrls = true;
+  
+
 	return less.render(lessOutput, {
 			compress: false,
 			sourceMap: outputOpts.sourceMaps,
-			relativeUrls: relativeUrls
+			relativeUrls: true,
+			rootpath: loader.rootpath || ""
 		})
 		.then(function (data) {
 			var cssOutput = data.css;
 
-			if (relativeUrls) {
-				var urlRegex = /url\(["']?([^"']+)["']?\)/g;
-				var slashRegex = /\\/g;
-				var loadDir = process.cwd().replace(slashRegex, '/') + "/";
-				cssOutput = cssOutput.replace(urlRegex, function (match, url) {
-					return match.replace(loadDir, "").replace(slashRegex, '/');
-				});
-			}
+			var urlRegex = /url\(["']?(.+?)["']?\)/g;
+			var slashRegex = /\\/g;
+			var loadDir = process.cwd().replace(slashRegex, '/') + "/";
+			cssOutput = cssOutput.replace(urlRegex, function (match, url) {
+				return match.replace(loadDir, "").replace(slashRegex, '/');
+			});
 
 			// write a separate CSS file if necessary
 			if (loader.separateCSS) {
